@@ -5,6 +5,7 @@ import json
 import os
 from PIL import Image
 from pathlib import Path
+from torchvision import transforms
 
 
 
@@ -15,6 +16,15 @@ def get_img_size(img_path):
     image = Image.open(img_path)
     width, height = image.size
     return width, height
+
+def groundtruth_to_sem_seg(img_path):
+    """
+    Transform a binary .jpg image to torch.tensor for sem_seg
+    """
+    image = Image.open(img_path)
+    tensor_mask = transforms.ToTensor()(image).squeeze_()
+    return tensor_mask
+
 
 
 if __name__ == "__main__":
@@ -31,9 +41,11 @@ if __name__ == "__main__":
         sem_seg_file_name = GROUNDTRUTH / img_path.name
         width, height = get_img_size(img_path)
         img_id = img_path.name.split("_")[1].split(".")[0]
+        sem_seg = groundtruth_to_sem_seg(sem_seg_file_name)
         img_dict = {
             "filename": str(filename),
             "sem_seg_file_name": str(sem_seg_file_name),
+            "sem_seg": sem_seg,
             "height": height,
             "width": width,
             "img_id": img_id,
