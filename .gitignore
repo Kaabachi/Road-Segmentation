@@ -117,3 +117,5 @@ dmypy.json
 #vs-code and notebooks
 .vscode/
 .ipynb_checkpoints/
+*.json
+*.png
