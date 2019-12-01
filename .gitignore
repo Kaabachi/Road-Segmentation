@@ -113,3 +113,7 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/python
+
+#vs-code and notebooks
+.vscode/
+.ipynb_checkpoints/
