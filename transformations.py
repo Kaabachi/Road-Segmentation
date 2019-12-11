@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from pathlib import Path
 from torchvision import transforms
-from torchvision import functional as F
+from torchvision.transforms import functional as F
 import random
 
 
