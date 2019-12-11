@@ -1,0 +1,4 @@
+Pillow
+cudatoolkit
+pytorch-gpu
+torchvision
