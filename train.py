@@ -2,13 +2,15 @@ import torch
 import torch.nn as nn
 import torch.utils.data as data
 import torch.optim as optim
+import models
 from datasets import RoadsDatasetTrain
 
 
 # temp values
+MODEL = models.fcn_resnet101
 EPOCHS = 100
 LEARNING_RATE = 0.0001
-BATCH_SIZE = 100
+BATCH_SIZE = 1
 CRITERION = nn.BCELoss()
 # we have 2 classes
 OUTPUT_CHANNELS = 2
@@ -23,21 +25,26 @@ def train(model, dataloader, epochs, criterion, model_weights=None):
     else:
         print("NO GPU")
 
-    optimizer = optim.adam(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     for epoch in range(epochs):
+        model.train()
         for ind_batch, sample_batched in enumerate(dataloader):
+            batch_images = sample_batched["image"]
+            batch_groundtruth = sample_batched["groundtruth"]
             if cuda:
-                samples = samples.to(device="cuda")
+                batch_images = batch_images.to(device="cuda")
+                batch_groundtruth = batch_groundtruth.to(device="cuda")
             optimizer.zero_grad()
 
-            output = model(sample_batched["image"])
+            output = model(batch_images)['out']
 
             # TODO: check if this loss is working
             loss = criterion(
-                output.permute(0, 2, 3, 1).contiguous.view(-1, OUTPUT_CHANNELS),
-                sample_batched["groundtruth"].view(-1),
+                torch.argmax(output.permute(0, 2, 3, 1).contiguous().view(-1, OUTPUT_CHANNELS), dim=1).type(torch.float),
+                batch_groundtruth.view(-1)
             )
+            loss.require_grad = True
             loss.backward()
             optimizer.step()
 
@@ -51,7 +58,7 @@ def train(model, dataloader, epochs, criterion, model_weights=None):
 
 if __name__ == "__main__":
     # TODO: model
-    model = None
+    model = MODEL
     data_dir = "./Datasets/training"
     dataset = RoadsDatasetTrain(root_dir=data_dir)
     dataloader = data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
