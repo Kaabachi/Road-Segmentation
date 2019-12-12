@@ -6,11 +6,7 @@ from pathlib import Path
 from PIL import Image
 from transformations import *
 
-MEAN = [0.485, 0.456, 0.406]
-STD = [0.229, 0.224, 0.225]
-# expected size from the models, could be 256 let's see
-SIZE = 224
-
+SIZE = 400
 
 class RoadsDatasetTrain(Dataset):
     """Road segmentation datset"""
@@ -38,7 +34,7 @@ class RoadsDatasetTrain(Dataset):
             sample = self.transform(sample)
         else:
             transformation = transforms.Compose(
-                [Resize(size=SIZE), ToTensor(), Normalize(mean=MEAN, std=STD)]
+                [Resize(size=SIZE), ToTensor()]
             )
             sample = transformation(sample)
 
@@ -63,16 +59,17 @@ class RoadsDatasetTest(Dataset):
         img_name = self.img_names[idx]
         image = Image.open(img_name)
 
+        sample = image
+        
         if self.transform:
             sample = self.transform(image)
         else:
             transformation = transforms.Compose(
                 [
                     transforms.Resize(size=SIZE),
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean=MEAN, std=STD),
+                    transforms.ToTensor()
                 ]
             )
-            transformation(sample)
+            sample = transformation(sample)
 
         return sample
