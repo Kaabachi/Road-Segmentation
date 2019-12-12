@@ -1,4 +1,8 @@
+numpy
 Pillow
-cudatoolkit
+# I'm assuming cadatoolkit is installed on collab
+#cudatoolkit
 pytorch-gpu
 torchvision
+tqdm
+PyDrive
