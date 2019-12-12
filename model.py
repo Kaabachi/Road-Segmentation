@@ -9,7 +9,7 @@ PRETRAINED = True
 NUM_CLASSES = 2
 
 
-model = models.segmentation.fcn_resnet101(pretrained=PRETRAINED, num_classes=NUM_CLASSES)
+model = models.segmentation.fcn_resnet101(pretrained=False, num_classes=NUM_CLASSES)
 
 #temp name
 #class CNNmodel(nn.Module):
