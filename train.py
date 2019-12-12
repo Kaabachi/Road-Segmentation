@@ -37,22 +37,20 @@ def train(model, dataloader, epochs, criterion, model_weights=None):
                 batch_groundtruth = batch_groundtruth.to(device="cuda")
             optimizer.zero_grad()
 
-            output = model(batch_images)['out']
+            output = model(batch_images)["out"]
+            output_predictions = torch.tensor(
+                output.argmax(1).type(torch.float), requires_grad=True
+            )
 
             # TODO: check if this loss is working
-            loss = criterion(
-                torch.argmax(output.permute(0, 2, 3, 1).contiguous().view(-1, OUTPUT_CHANNELS), dim=1).type(torch.float),
-                batch_groundtruth.view(-1)
-            )
-            loss.require_grad = True
+            loss = criterion(output_predictions.view(-1), batch_groundtruth.view(-1))
+            # loss.require_grad = True
             loss.backward()
             optimizer.step()
 
             if ind_batch % 10 == 0:
                 print(
-                    "[Epoch {}, Batch {}/{}]:  [Loss: {:03.2f}]".format(
-                        epoch, ind_batch, len(dataloader), loss.data[0]
-                    )
+                    f"[Epoch {epoch}, Batch {ind_batch:02d}/{len(dataloader)}]:  [Loss: {loss.item():03.2f}]"
                 )
 
 
