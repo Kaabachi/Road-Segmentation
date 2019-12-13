@@ -12,9 +12,10 @@ def train(model, dataloader, epochs, criterion, model_weights=None):
             batch_images = sample_batched["image"]
             batch_groundtruth = sample_batched["groundtruth"]
             
+            print(batch_images.size())
             optimizer.zero_grad()
 
-            output = model(batch_images)
+            output = model(batch_images[0])
             
             loss = criterion(
                 output,
