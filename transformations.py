@@ -37,7 +37,7 @@ class RandomVerticalFlip(transforms.RandomVerticalFlip):
         p (float): probability of the image being flipped. Default value is 0.5
     """
 
-    def __call__(sefl, sample):
+    def __call__(self, sample):
         if random.random() < self.p:
             return {
                 "image": F.vflip(sample["image"]),
