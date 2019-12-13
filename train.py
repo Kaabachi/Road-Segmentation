@@ -8,7 +8,7 @@ def train(model, X_tensor, Y_tensor, epochs, criterion, model_weights=None, batc
     
 #     assert batch_size divides X_tensor.size()[0]
     X = X_tensor.reshape(X_tensor.size()[0]//batch_size, batch_size, X_tensor.size()[1], X_tensor.size()[2], X_tensor.size()[3])
-    Y = Y_tensor.reshape(Y_tensor.size()[0]//batch_size, batch_size, Y_tensor.size()[1], Y_tensor.size()[2])
+    Y = Y_tensor.reshape(Y_tensor.size()[0]//batch_size, batch_size, 1,  Y_tensor.size()[1], Y_tensor.size()[2])
     
     for epoch in range(epochs):
         model.train()
@@ -16,13 +16,16 @@ def train(model, X_tensor, Y_tensor, epochs, criterion, model_weights=None, batc
             image = X[i]
             groundtruth = Y[i]
             
+            image = image.type('torch.FloatTensor')
+            groundtruth = groundtruth.type('torch.FloatTensor')
+            
             optimizer.zero_grad()
-        
+            
+            image = image.type('torch.FloatTensor')
+       
             output = model(image)
             
-            print("out", output.size())
-            
-            loss = criterion(output[0],batch_groundtruth[0])
+            loss = criterion(output,groundtruth)
         
             loss.require_grad = True
             loss.backward()
