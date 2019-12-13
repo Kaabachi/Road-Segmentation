@@ -78,17 +78,11 @@ def get_large_patches(image,padded_image,patch_size,x_dim,y_dim):
         sc = 1    
 
 
-#     for j in range(patch_size//2,sw,patch_size):
-#         for i in range(patch_size//2, sh, patch_size):
-#             patches.append(padded_image[i:i+y_dim, j:j+x_dim])
-
-#     (x_dim-16)
-
-#      for j in range(patch_size//2,sw,patch_size):
-#         for i in range(patch_size//2, sh, patch_size):
-#             patches.append(padded_image[i:i+y_dim, j:j+x_dim])
-
+    for j in range(patch_size//2,sw,patch_size):
+        for i in range(patch_size//2, sh, patch_size):
+            patches.append(padded_image[i:i+y_dim, j:j+x_dim])
     return patches
+
 
 def get_train_dataset(path):
     x_dim= 96
