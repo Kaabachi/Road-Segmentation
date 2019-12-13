@@ -73,6 +73,6 @@ class RoadsDatasetTest(Dataset):
                     transforms.Normalize(mean=MEAN, std=STD),
                 ]
             )
-            transformation(sample)
+            sample = transformation(image)
 
-        return sample
+        return {"img_name": Path(img_name).name, "image": sample}
