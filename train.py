@@ -35,19 +35,18 @@ TRANSFORM = transforms.Compose(
         Normalize(mean=MEAN, std=STD),
     ]
 )
-MODEL = models.fcn_resnet50
+MODEL = models.fcn_resnet101
+MODEL_NAME = "fcn_resnet101"
 EPOCHS = 100
 LEARNING_RATE = 0.0001
-BATCH_SIZE = 2
+BATCH_SIZE = 1
 CRITERION = nn.BCELoss()
-# we have 2 classes
-OUTPUT_CHANNELS = 2
 
 
 def save_model(model, epoch, loss, save_dir):
-   model_name =  model.__class__.__name__
+   model_name =  MODEL_NAME
    timestr = time.strftime("%Y%m%d-%H%M%S")
-   file_name = f'{timestr}_{model_name}_epoch_{epoch}_loss_{loss}.pt'
+   file_name = f'{timestr}_{model_name}_epoch_{epoch}_loss_{loss:03.3f}.pt'
    Path(save_dir).mkdir(exist_ok=True)
    file_path = Path(save_dir) / file_name
    torch.save(model.state_dict(), str(file_path))
@@ -90,7 +89,7 @@ def train(model, dataloader, epochs, criterion, model_weights=None):
                     f"[Epoch {epoch}, Batch {ind_batch:02d}/{len(dataloader)}]:  [Loss: {loss.item():03.2f}]"
                 )
 
-        if epoch % 5 == 0:
+        if epoch % 10 == 0:
             save_model(model, epoch, loss.item(), CHECKPOINTS_DIR)
             print(f'model saved to {str(CHECKPOINTS_DIR)}')
 
