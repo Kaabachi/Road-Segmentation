@@ -118,7 +118,6 @@ def get_train_dataset(path):
     images = np.asarray(images)
     images = torch.from_numpy(images)
     images = images.permute(0,1,4,2,3)
-    print(images.size())
     images = images.reshape(images.size()[0]*images.size()[1],images.size()[2], images.size()[3], images.size()[4])
     
     
