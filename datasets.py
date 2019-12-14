@@ -15,6 +15,24 @@ from helpers import pad_image
 # NUMBER_PATCHES_PER_ROW = IMAGE_INITIAL_SIZE // PATCH_SIZE #25
 # NUMBER_PATCHES_PER_IMAGE = NUMBER_PATCHES_PER_ROW * NUMBER_PATCHES_PER_ROW #25
 
+def extract_images(img_names, root_dir=None):
+    images = []
+    
+    if(root_dir != None):
+        for i in range(len(img_names)):
+            name = img_names[i]
+            image = Image.open(root_dir / name)
+
+            images.append(image)
+    else:
+        for i in range(len(img_names)):
+            name = img_names[i]
+            image = Image.open(name)
+
+            images.append(image)
+        
+    return images
+
 class RoadsDatasetTrain(Dataset):
     """Road segmentation datset"""
 
@@ -25,6 +43,8 @@ class RoadsDatasetTrain(Dataset):
         self.gt_dir = self.root_dir / "groundtruth"
         self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
         self.patch_size = patch_size
+        self.images = extract_images(self.img_names, self.img_dir)
+        self.groundtruths = extract_images(self.img_names, self.gt_dir)
         self.large_patch_size = large_patch_size
         self.number_patch_per_image = number_patch_per_image
         self.image_initial_size = image_initial_size
@@ -42,8 +62,8 @@ class RoadsDatasetTrain(Dataset):
         patch_index = idx%n_p_p_i
         
         img_name = self.img_names[image_index]
-        image = Image.open(self.img_dir / img_name)
-        groundtruth = Image.open(self.gt_dir / img_name)
+        image = self.images[image_index]
+        groundtruth = self.groundtruths[image_index]
         
         padded_image = pad_image(np.array(image),l_p_s,l_p_s)
         padded_groundtruth = pad_image(np.array(groundtruth), l_p_s, l_p_s)
@@ -89,6 +109,7 @@ class RoadsDatasetTest(Dataset):
         self.transform = transform
         self.img_names = [str(x) for x in self.root_dir.glob("**/*.png") if x.is_file()]
         self.patch_size = patch_size
+        self.images = extract_images(self.img_names)
         self.large_patch_size = large_patch_size
         self.number_patch_per_image = number_patch_per_image
         self.image_initial_size = image_initial_size
@@ -107,7 +128,7 @@ class RoadsDatasetTest(Dataset):
         
         img_name = self.img_names[image_index]
         
-        image = Image.open(img_name)
+        image = self.images[image_index]
         
         padded_image = pad_image(np.array(image),l_p_s,l_p_s)
         
