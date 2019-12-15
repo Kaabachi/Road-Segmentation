@@ -2,19 +2,27 @@ import math
 
 import numpy as np
 import torch
+import torch.utils.data as data
 from torchvision import transforms
 
+from datasets import RoadsDatasetTest
+from model import UNet
+
+BATCH_SIZE = 1
 PADDING = 40
 PATCH_SIZE = 16
 LARGE_PATCH_SIZE = 96
 IMAGE_SIZE = 608
-NUMBER_PATCHES_PER_IMAGE = 1444
+NUMBER_PATCH_PER_IMAGE = 1444
+MODEL = UNet()
+MODEL_WEIGHTS = None  # None for now
+DATASET_DIR = "./Datasets/test_set_images"
 
 
 def save_image(image, i):
     prediction_data_dir = "./Datasets/predictions/"
 
-    mask = image.clone().detach()
+    mask = image.clone().detach().cpu()
 
     img = transforms.ToPILImage()(mask)
     img.save(prediction_data_dir + "img" + str(i) + ".png", "PNG")
@@ -24,7 +32,11 @@ def crop(image):
     return image[PADDING : PADDING + PATCH_SIZE, PADDING : PADDING + PATCH_SIZE]
 
 
-def predict(model, dataloader):
+def predict(model, dataloader, model_weights=None):
+
+    if model_weights is not None:
+        model.load_state_dict(torch.load(model_weights))
+
     model.eval()
 
     tmp_img = torch.zeros(IMAGE_SIZE, IMAGE_SIZE)
@@ -62,11 +74,24 @@ def predict(model, dataloader):
 
         tmp_img[start_x:end_x, start_y:end_y] = small_patch
 
-        if (index[1] == math.sqrt(NUMBER_PATCHES_PER_IMAGE) - 1) and (
-            index[2] == math.sqrt(NUMBER_PATCHES_PER_IMAGE) - 1
+        if (index[1] == math.sqrt(NUMBER_PATCH_PER_IMAGE) - 1) and (
+            index[2] == math.sqrt(NUMBER_PATCH_PER_IMAGE) - 1
         ):
             save_image(tmp_img, index[0])
             tmp_img = torch.zeros(IMAGE_SIZE, IMAGE_SIZE)
 
         if ind_batch % 100 == 0:
             print("[Patch {}/{}]".format(ind_batch, len(dataloader)))
+
+
+if __name__ == "__main__":
+    model = MODEL
+    dataset = RoadsDatasetTest(
+        patch_size=PATCH_SIZE,
+        large_patch_size=LARGE_PATCH_SIZE,
+        number_patch_per_image=NUMBER_PATCH_PER_IMAGE,
+        image_initial_size=IMAGE_SIZE,
+        root_dir=DATASET_DIR,
+    )
+    dataloader = data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE)
+    predict(model=model, dataloader=dataloader, model_weights=MODEL_WEIGHTS)
