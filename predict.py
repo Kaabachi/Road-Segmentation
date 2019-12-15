@@ -6,7 +6,7 @@ import torch.utils.data as data
 from torchvision import transforms
 
 from datasets import RoadsDatasetTest
-from model import UNet
+from models.unet import UNet
 
 BATCH_SIZE = 1
 PADDING = 40

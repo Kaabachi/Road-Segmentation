@@ -7,7 +7,7 @@ import torch.optim as optim
 import torch.utils.data as data
 
 from datasets import RoadsDatasetTrain
-from model import UNet
+from models.unet import UNet
 
 LEARNING_RATE = 0.0001
 MODEL_NAME = "unet"
