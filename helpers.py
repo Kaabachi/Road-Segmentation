@@ -6,8 +6,8 @@ import torch
 import numpy as np
 import cv2
 
+# pad an image and fill the padded space with mirroring effect if `mirror` is set to True
 def pad(image, paddingh, paddingw, mirror=True):
-    ''' Padd an image and fill the padded space with mirroring effect if `mirror` is set to True '''
     shape_image = list(image.shape)
     h, w = shape_image[:2]
     shape_image[0], shape_image[1] = h+paddingh*2, w+paddingw*2
@@ -21,6 +21,12 @@ def pad(image, paddingh, paddingw, mirror=True):
         new_image[:,0:paddingw] = cv2.flip(new_image[:,paddingw:2*paddingw],1)
         new_image[:,paddingw+w:] = cv2.flip(new_image[:,w:w+paddingw],1)
     return new_image
+
+# get padding adequate to the size wanted
+def pad_image(image,x_dim,y_dim, pad):
+    padded_image = pad(image,(x_dim-16)//2, (y_dim-16)//2)
+#     padded_image = pad(image,x_dim//2, y_dim//2)
+    return padded_image
 
 #get training set from directory, groundtruth and images
 def get_train_set_bk(root_dir):
@@ -46,11 +52,6 @@ def get_train_set_bk(root_dir):
 
     return df
 
-# get padding adequate to the size wanted
-def pad_image(image,x_dim,y_dim):
-    padded_image = pad(image,(x_dim-16)//2, (y_dim-16)//2)
-#     padded_image = pad(image,x_dim//2, y_dim//2)
-    return padded_image
 
 # get patch_size x patch_size patches
 def get_patches(image,padded_image,patch_size,x_dim,y_dim):
@@ -84,41 +85,3 @@ def get_large_patches(image,padded_image,patch_size,x_dim,y_dim):
             patches.append(padded_image[i-padding:i+y_dim-padding, j-padding:j+x_dim-padding])
 
     return patches
-
-def get_train_dataset(path):
-    x_dim= 96
-    y_dim= 96
-    patch_size = 16
-
-    # load data
-    data = get_train_set_bk(path)
-
-    # pad images
-    data["padded_img"] = data.apply(lambda row : pad_image(row["image"],x_dim,y_dim),axis = 1)
-    tmp = []
-    data.apply(lambda row : tmp.append(row["padded_img"]),axis = 1)
-    images_kemlin = np.asarray(tmp)
-#     images_kemlin = torch.from_numpy(images_kemlin)
-    
-    data["padded_groundtruth"] = data.apply(lambda row : pad_image(row["groundtruth"],x_dim,y_dim),axis = 1)
-    tmp = []
-    data.apply(lambda row : tmp.append(row["padded_groundtruth"]),axis = 1)
-    groundtruth_kemlin = np.asarray(tmp)
-#     groundtruth_kemlin = torch.from_numpy(grountruth_kemlin)
-    
-    
-#     data["padded_groundtruth"] = data.apply(lambda row : pad_image(row["groundtruth"],x_dim,y_dim),axis = 1)
-    
-    groundtruth = data.apply(lambda row : get_large_patches(row["groundtruth"], row["padded_groundtruth"], patch_size,x_dim,y_dim), axis=1).tolist()
-    groundtruth = np.asarray(groundtruth)
-    groundtruth = torch.from_numpy(groundtruth)
-    groundtruth = groundtruth.reshape(groundtruth.size()[0]*groundtruth.size()[1],groundtruth.size()[2], groundtruth.size()[3])
-    
-    images = data.apply(lambda row :get_large_patches(row["image"],row["padded_img"],patch_size,x_dim,y_dim),axis = 1).tolist()
-    images = np.asarray(images)
-    images = torch.from_numpy(images)
-    images = images.permute(0,1,4,2,3)
-    images = images.reshape(images.size()[0]*images.size()[1],images.size()[2], images.size()[3], images.size()[4])
-    
-    
-    return images, groundtruth, images_kemlin, groundtruth_kemlin

@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from pathlib import Path
 from torchvision import transforms
 from torchvision.transforms import functional as F
 import random
@@ -11,41 +10,7 @@ class ToTensor(transforms.ToTensor):
         image = sample["image"]
         groundtruth = sample["groundtruth"]
         return {"image": F.to_tensor(image), "groundtruth": F.to_tensor(groundtruth)}
-
-
-class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
-    def __call__(self, sample):
-        """
-        Args:
-            sample (dict of PIL Images): Image to be flipped.
-
-        Returns:
-            PIL Image: Randomly flipped image.
-        """
-        if random.random() < self.p:
-            return {
-                "image": F.hflip(sample["image"]),
-                "groundtruth": F.hflip(sample["groundtruth"]),
-            }
-        return sample
-
-
-class RandomVerticalFlip(transforms.RandomVerticalFlip):
-    """Vertically flip the given PIL Image randomly with a given probability.
-
-    Args:
-        p (float): probability of the image being flipped. Default value is 0.5
-    """
-
-    def __call__(sefl, sample):
-        if random.random() < self.p:
-            return {
-                "image": F.vflip(sample["image"]),
-                "groundtruth": F.vflip(sample["groundtruth"]),
-            }
-        return sample
-
-
+    
 class RandomRotation(transforms.RandomRotation):
     """Rotate the image by angle.
 
@@ -76,14 +41,103 @@ class RandomRotation(transforms.RandomRotation):
         groundtruth = sample["groundtruth"]
         return {
             "image": F.rotate(
-                image, angle, self.resample, self.expand, self.center, self.fill
-            ),
+                image, angle, self.resample, self.expand, self.center
+            )
+            ,
             "groundtruth": F.rotate(
-                groundtruth, angle, self.resample, self.expand, self.center, self.fill
-            ),
+                groundtruth, angle, self.resample, self.expand, self.center
+            )
+        }    
+
+class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
+    def __call__(self, sample):
+        """
+        Args:
+            sample (dict of PIL Images): Image to be flipped.
+
+        Returns:
+            PIL Image: Randomly flipped image.
+        """
+        if random.random() < self.p:
+            return {
+                "image": F.hflip(sample["image"]),
+                "groundtruth": F.hflip(sample["groundtruth"]),
+            }
+        return None
+
+
+class RandomVerticalFlip(transforms.RandomVerticalFlip):
+    """Vertically flip the given PIL Image randomly with a given probability.
+
+    Args:
+        p (float): probability of the image being flipped. Default value is 0.5
+    """
+
+    def __call__(self, sample):
+        if random.random() < self.p:
+            return {
+                "image": F.vflip(sample["image"]),
+                "groundtruth": F.vflip(sample["groundtruth"]),
+            }
+        return None
+    
+class Pad(transforms.Pad):
+    """Pad the given PIL Image on all sides with the given "pad" value.
+
+    Args:
+        padding (int or tuple): Padding on each border. If a single int is provided this
+            is used to pad all borders. If tuple of length 2 is provided this is the padding
+            on left/right and top/bottom respectively. If a tuple of length 4 is provided
+            this is the padding for the left, top, right and bottom borders
+            respectively.
+        fill (int or tuple): Pixel fill value for constant fill. Default is 0. If a tuple of
+            length 3, it is used to fill R, G, B channels respectively.
+            This value is only used when the padding_mode is constant
+        padding_mode (str): Type of padding. Should be: constant, edge, reflect or symmetric.
+            Default is constant.
+
+            - constant: pads with a constant value, this value is specified with fill
+
+            - edge: pads with the last value at the edge of the image
+
+            - reflect: pads with reflection of image without repeating the last value on the edge
+
+                For example, padding [1, 2, 3, 4] with 2 elements on both sides in reflect mode
+                will result in [3, 2, 1, 2, 3, 4, 3, 2]
+
+            - symmetric: pads with reflection of image repeating the last value on the edge
+
+                For example, padding [1, 2, 3, 4] with 2 elements on both sides in symmetric mode
+                will result in [2, 1, 1, 2, 3, 4, 4, 3]
+    """
+    
+    def __call__(self, sample):
+        return {
+            "image": F.pad(sample["image"], self.padding, self.fill, self.padding_mode),
+            "groundtruth": F.pad(sample["groundtruth"], self.padding, self.fill, self.padding_mode)
         }
 
+class CenterCrop(transforms.CenterCrop):
+    """Crops the given PIL Image at the center.
 
+    Args:
+        size (sequence or int): Desired output size of the crop. If size is an
+            int instead of sequence like (h, w), a square crop (size, size) is
+            made.
+    """
+    def __call__(self, sample):
+        """
+        Args:
+            img (PIL Image): Image to be cropped.
+
+        Returns:
+            PIL Image: Cropped image.
+        """
+        return {
+            "image": F.center_crop(sample["image"], self.size),
+            "groundtruth": F.center_crop(sample["groundtruth"], self.size)
+        }
+    
 class ColorJitter(transforms.ColorJitter):
     """Randomly change the brightness, contrast and saturation of an image.
 
@@ -111,8 +165,7 @@ class ColorJitter(transforms.ColorJitter):
             "image": transform(sample["image"]),
             "groundtruth": sample["groundtruth"],
         }
-
-
+    
 class Normalize(transforms.Normalize):
     """Normalize a tensor image with mean and standard deviation.
     Given mean: ``(M1,...,Mn)`` and std: ``(S1,..,Sn)`` for ``n`` channels, this transform

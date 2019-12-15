@@ -41,7 +41,7 @@ def predict(model, dataloader, model_weights=None):
 
     tmp_img = torch.zeros(IMAGE_SIZE, IMAGE_SIZE)
 
-    cuda = torch.cuda.is_available
+    cuda = torch.cuda.is_available()
     if cuda:
         model = model.to(device="cuda")
         print("CUDA is available")

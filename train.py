@@ -69,7 +69,7 @@ def train(
 
             optimizer.step()
 
-            if ind_batch % 10 == 0:
+            if ind_batch % 100 == 0:
                 print(
                     "[Epoch {}, Batch {}/{}]:  [Loss: {:03.2f}]".format(
                         epoch, ind_batch, len(dataloader), loss
