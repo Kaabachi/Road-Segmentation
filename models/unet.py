@@ -42,6 +42,7 @@ class UNet(nn.Module):
 
     def __init__(self, in_channels=3, out_channels=1, init_filters=32):
         super(UNet, self).__init__()
+        self.model_name = "unet"
         filters = init_filters
         self.encoder1 = block(in_channels, filters, name="encoder1")
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
