@@ -2,11 +2,19 @@ import time
 from pathlib import Path
 
 import torch
+import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as data
+
+from datasets import RoadsDatasetTrain
+from model import UNet
 
 LEARNING_RATE = 0.0001
 MODEL_NAME = "unet"
 CHECKPOINTS_DIR = "./checkpoints"
+BATCH_SIZE = 2
+CRITERION = nn.BCELoss()
+EPOCHS = 100
 
 
 def save_model(model, epoch, loss, save_dir):
@@ -24,7 +32,6 @@ def train(
     epochs,
     criterion,
     model_weights=None,
-    batch_size=1,
     checkpoints_dir=CHECKPOINTS_DIR,
 ):
 
@@ -68,3 +75,17 @@ def train(
                 model=model, epoch=epoch, loss=loss.item(), save_dir=checkpoints_dir
             )
             print(f"model saved to {str(checkpoints_dir)}")
+
+
+if __name__ == "__main__":
+    model = UNet()
+    # TODO: Put right init params in dataset
+    dataset = RoadsDatasetTrain()
+    dataloader = data.dataloader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train(
+        model=model,
+        dataloader=dataloader,
+        epochs=EPOCHS,
+        criterion=CRITERION,
+        checkpoints_dir=CHECKPOINTS_DIR,
+    )
