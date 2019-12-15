@@ -8,22 +8,22 @@ import torch.utils.data as data
 
 from datasets import RoadsDatasetTrain
 from models.unet import UNet
+from models.resnet import ResNet
 
 LEARNING_RATE = 0.0001
-MODEL_NAME = "unet"
 CHECKPOINTS_DIR = "./checkpoints"
 BATCH_SIZE = 1
 CRITERION = nn.BCELoss()
 EPOCHS = 100
 PATCH_SIZE = 16
-LARGE_PATCH_SIZE = 400
+LARGE_PATCH_SIZE = 96
 TRAIN_IMAGE_INITIAL_SIZE = 400
 NUMBER_PACH_PER_IMAGE = int((TRAIN_IMAGE_INITIAL_SIZE / PATCH_SIZE)**2)
 DATASET_DIR = "./Datasets/training"
 
 
 def save_model(model, epoch, loss, save_dir):
-    model_name = MODEL_NAME
+    model_name = model.name
     timestr = time.strftime("%Y%m%d-%H%M%S")
     file_name = f"{timestr}_{model_name}_epoch_{epoch}_loss_{loss:03.3f}.pt"
     Path(save_dir).mkdir(exist_ok=True)
@@ -83,7 +83,7 @@ def train(
 
 
 if __name__ == "__main__":
-    model = UNet()
+    model = ResNet()
     dataset = RoadsDatasetTrain(
         patch_size=PATCH_SIZE,
         large_patch_size=LARGE_PATCH_SIZE,
