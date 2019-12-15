@@ -15,6 +15,10 @@ CHECKPOINTS_DIR = "./checkpoints"
 BATCH_SIZE = 2
 CRITERION = nn.BCELoss()
 EPOCHS = 100
+PATCH_SIZE = 16
+LARGE_PATCH_SIZE = 400
+TRAIN_IMAGE_INITIAL_SIZE = 400
+DATASET_DIR = "./Datasets/training"
 
 
 def save_model(model, epoch, loss, save_dir):
@@ -79,8 +83,12 @@ def train(
 
 if __name__ == "__main__":
     model = UNet()
-    # TODO: Put right init params in dataset
-    dataset = RoadsDatasetTrain()
+    dataset = RoadsDatasetTrain(
+        patch_size=PATCH_SIZE,
+        large_patch_size=LARGE_PATCH_SIZE,
+        image_initial_size=TRAIN_IMAGE_INITIAL_SIZE,
+        root_dir=DATASET_DIR,
+    )
     dataloader = data.dataloader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
     train(
         model=model,
