@@ -41,13 +41,16 @@ class RoadsDatasetTrain(Dataset):
         self.transform = transform
         self.img_dir = self.root_dir / "images"
         self.gt_dir = self.root_dir / "groundtruth"
+        
         self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
-        self.patch_size = patch_size
-        self.images = extract_images(self.img_names, self.img_dir)
-        self.groundtruths = extract_images(self.img_names, self.gt_dir)
+
         self.large_patch_size = large_patch_size
         self.number_patch_per_image = number_patch_per_image
         self.image_initial_size = image_initial_size
+        self.patch_size = patch_size
+        
+        self.groundtruths = extract_images(self.img_names, self.gt_dir)
+        self.images = extract_images(self.img_names, self.img_dir)
 
     def __len__(self):
         return self.number_patch_per_image * len(self.img_names)
@@ -89,7 +92,6 @@ class RoadsDatasetTrain(Dataset):
         l_p_s = self.large_patch_size
         
         padding = (self.large_patch_size - self.patch_size) // 2
-        
         
         y = ((patch_number % n_s_p_p_i) * p_s)+padding
         x = ((patch_number // n_s_p_p_i) * p_s)+padding
