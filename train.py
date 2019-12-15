@@ -12,12 +12,13 @@ from model import UNet
 LEARNING_RATE = 0.0001
 MODEL_NAME = "unet"
 CHECKPOINTS_DIR = "./checkpoints"
-BATCH_SIZE = 2
+BATCH_SIZE = 1
 CRITERION = nn.BCELoss()
 EPOCHS = 100
 PATCH_SIZE = 16
 LARGE_PATCH_SIZE = 400
 TRAIN_IMAGE_INITIAL_SIZE = 400
+NUMBER_PACH_PER_IMAGE = TRAIN_IMAGE_INITIAL_SIZE / PATCH_SIZE
 DATASET_DIR = "./Datasets/training"
 
 
@@ -87,9 +88,10 @@ if __name__ == "__main__":
         patch_size=PATCH_SIZE,
         large_patch_size=LARGE_PATCH_SIZE,
         image_initial_size=TRAIN_IMAGE_INITIAL_SIZE,
+        number_patch_per_image=NUMBER_PACH_PER_IMAGE,
         root_dir=DATASET_DIR,
     )
-    dataloader = data.dataloader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
+    dataloader = data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
     train(
         model=model,
         dataloader=dataloader,
