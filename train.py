@@ -21,7 +21,7 @@ from models.unet import UNet
 
 
 def save_model(model, epoch, loss, save_dir):
-    model_name = model.name
+    model_name = model.model_name
     timestr = time.strftime("%Y%m%d-%H%M%S")
     file_name = f"{timestr}_{model_name}_epoch_{epoch}_loss_{loss:03.3f}.pt"
     Path(save_dir).mkdir(exist_ok=True)
