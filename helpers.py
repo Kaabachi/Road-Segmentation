@@ -5,6 +5,7 @@ from torchvision import transforms
 import torch
 import numpy as np
 import cv2
+import re
 
 # pad an image and fill the padded space with mirroring effect if `mirror` is set to True
 def pad(image, paddingh, paddingw, mirror=True):
@@ -85,3 +86,17 @@ def get_large_patches(image,padded_image,patch_size,x_dim,y_dim):
             patches.append(padded_image[i-padding:i+y_dim-padding, j-padding:j+x_dim-padding])
 
     return patches
+
+# Functions used to sort image names when loading test dataset so that the loading is done in order
+
+def to_int(text):
+    '''
+    Transform text to int if it is digit
+    '''
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    '''
+    alist.sort(key=natural_keys) sorts in human order
+    '''
+    return [ to_int(c) for c in re.split(r'(\d+)', text) ]

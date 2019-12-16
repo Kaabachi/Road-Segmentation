@@ -5,9 +5,10 @@ from torchvision import transforms, utils
 from pathlib import Path
 from PIL import Image
 import transformations
-from helpers import pad_image
+from helpers import pad_image, to_int, natural_keys
 from torchvision.transforms import functional as F
 import math
+
 
 class RoadsDatasetTrain(Dataset):
     """Road segmentation datset"""
@@ -18,6 +19,9 @@ class RoadsDatasetTrain(Dataset):
         self.gt_dir = self.root_dir / "groundtruth"
         
         self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
+        # Sort images to in a human readable way
+        self.img_names.sort(key=natural_keys)
+        
 
         self.large_patch_size = large_patch_size
         self.number_patch_per_image = number_patch_per_image
