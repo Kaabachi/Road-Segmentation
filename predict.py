@@ -5,12 +5,14 @@ import torch
 import torch.utils.data as data
 from torchvision import transforms
 
-from config import LARGE_BATCH_SIZE, NUMBER_PATCH_PER_SIZE, PADDING, PATCH_SIZE
+from config import LARGE_PATCH_SIZE, PADDING, PATCH_SIZE
+from config import NUMBER_PATCH_PER_TEST_IMAGE as NUMBER_PATCH_PER_IMAGE
 from config import TEST_BATCH_SIZE as BATCH_SIZE
 from config import TEST_DATASET_DIR as DATASET_DIR
 from config import TEST_IMAGE_SIZE as IMAGE_SIZE
 from config import TEST_MODEL as MODEL
-from config import TEST_MODEL_WEIGTS as MODEL_WEIGHTS
+from config import TEST_MODEL_WEIGHTS as MODEL_WEIGHTS
+from config import MASK_THRESHOLD as THRESHOLD
 from datasets import RoadsDatasetTest
 
 
@@ -51,8 +53,8 @@ def predict(model, dataloader, model_weights=None):
             output = model(batch_images)
 
         final = output[0][0].clone().detach().cpu()
-        final[final > 0.5] = 1
-        final[final <= 0.5] = 0
+        final[final > THRESHOLD] = 1
+        final[final <= THRESHOLD] = 0
 
         small_patch = crop(final)
         index = np.array(

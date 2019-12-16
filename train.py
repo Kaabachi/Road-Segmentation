@@ -8,8 +8,9 @@ import torch.utils.data as data
 
 from config import CRITERION as CRITERION
 from config import EPOCHS as EPOCHS
-from config import (LARGE_PATCH_SIZE, LEARNING_RATE, NUMBER_PATCH_PER_IMAGE,
+from config import (LARGE_PATCH_SIZE, LEARNING_RATE,
                     PATCH_SIZE, SAVE_MODEL_EVERY_X_EPOCH)
+from config import NUMBER_PATCH_PER_TRAIN_IMAGE as NUMBER_PATCH_PER_IMAGE
 from config import TRAIN_BATCH_SIZE as BATCH_SIZE
 from config import TRAIN_CHECKPOINTS_DIR as CHECKPOINTS_DIR
 from config import TRAIN_DATASET_DIR as DATASET_DIR
