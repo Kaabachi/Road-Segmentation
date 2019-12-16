@@ -19,8 +19,7 @@ class RoadsDatasetTrain(Dataset):
         self.gt_dir = self.root_dir / "groundtruth"
         
         self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
-        # Sort images to in a human readable way
-        self.img_names.sort(key=natural_keys)
+
         
 
         self.large_patch_size = large_patch_size
@@ -140,6 +139,8 @@ class RoadsDatasetTest(Dataset):
     def __init__(self,patch_size, large_patch_size, number_patch_per_image, image_initial_size,root_dir):
         self.root_dir = Path(root_dir)
         self.img_names = [str(x) for x in self.root_dir.glob("**/*.png") if x.is_file()]
+        # Sort images to in a human readable way
+        self.img_names.sort(key=natural_keys)
         
         self.patch_size = patch_size
         self.large_patch_size = large_patch_size
