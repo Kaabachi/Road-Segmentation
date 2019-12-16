@@ -5,18 +5,13 @@ import torch
 import torch.utils.data as data
 from torchvision import transforms
 
+from config import LARGE_BATCH_SIZE, NUMBER_PATCH_PER_SIZE, PADDING, PATCH_SIZE
+from config import TEST_BATCH_SIZE as BATCH_SIZE
+from config import TEST_DATASET_DIR as DATASET_DIR
+from config import TEST_IMAGE_SIZE as IMAGE_SIZE
+from config import TEST_MODEL as MODEL
+from config import TEST_MODEL_WEIGTS as MODEL_WEIGHTS
 from datasets import RoadsDatasetTest
-from models.unet import UNet
-
-BATCH_SIZE = 1
-PADDING = 40
-PATCH_SIZE = 16
-LARGE_PATCH_SIZE = 96
-IMAGE_SIZE = 608
-NUMBER_PATCH_PER_IMAGE = 1444
-MODEL = UNet()
-MODEL_WEIGHTS = None  # None for now
-DATASET_DIR = "./Datasets/test_set_images"
 
 
 def save_image(image, i):

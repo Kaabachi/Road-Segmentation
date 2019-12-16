@@ -6,20 +6,18 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 
+from config import CRITERION as CRITERION
+from config import EPOCHS as EPOCHS
+from config import (LARGE_PATCH_SIZE, LEARNING_RATE, NUMBER_PATCH_PER_IMAGE,
+                    PATCH_SIZE, SAVE_MODEL_EVERY_X_EPOCH)
+from config import TRAIN_BATCH_SIZE as BATCH_SIZE
+from config import TRAIN_CHECKPOINTS_DIR as CHECKPOINTS_DIR
+from config import TRAIN_DATASET_DIR as DATASET_DIR
+from config import TRAIN_IMAGE_INITIAL_SIZE
+from config import TRAIN_MODEL as MODEL
 from datasets import RoadsDatasetTrain
-from models.unet import UNet
 from models.resnet import ResNet
-
-LEARNING_RATE = 0.0001
-CHECKPOINTS_DIR = "./checkpoints"
-BATCH_SIZE = 1
-CRITERION = nn.BCELoss()
-EPOCHS = 100
-PATCH_SIZE = 16
-LARGE_PATCH_SIZE = 96
-TRAIN_IMAGE_INITIAL_SIZE = 400
-NUMBER_PACH_PER_IMAGE = int((TRAIN_IMAGE_INITIAL_SIZE / PATCH_SIZE)**2)
-DATASET_DIR = "./Datasets/training"
+from models.unet import UNet
 
 
 def save_model(model, epoch, loss, save_dir):
@@ -75,7 +73,7 @@ def train(
                         epoch, ind_batch, len(dataloader), loss
                     )
                 )
-        if epoch % 5 == 0:
+        if epoch % SAVE_MODEL_EVERY_X_EPOCH == 0:
             save_model(
                 model=model, epoch=epoch, loss=loss.item(), save_dir=checkpoints_dir
             )
@@ -83,12 +81,12 @@ def train(
 
 
 if __name__ == "__main__":
-    model = ResNet()
+    model = MODEL
     dataset = RoadsDatasetTrain(
         patch_size=PATCH_SIZE,
         large_patch_size=LARGE_PATCH_SIZE,
         image_initial_size=TRAIN_IMAGE_INITIAL_SIZE,
-        number_patch_per_image=NUMBER_PACH_PER_IMAGE,
+        number_patch_per_image=NUMBER_PATCH_PER_IMAGE,
         root_dir=DATASET_DIR,
     )
     dataloader = data.DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
