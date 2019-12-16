@@ -9,7 +9,7 @@ import torch.utils.data as data
 from config import CRITERION as CRITERION
 from config import EPOCHS as EPOCHS
 from config import (LARGE_PATCH_SIZE, LEARNING_RATE, NUMBER_PATCH_PER_IMAGE,
-                    PATCH_SIZE)
+                    PATCH_SIZE, SAVE_MODEL_EVERY_X_EPOCH)
 from config import TRAIN_BATCH_SIZE as BATCH_SIZE
 from config import TRAIN_CHECKPOINTS_DIR as CHECKPOINTS_DIR
 from config import TRAIN_DATASET_DIR as DATASET_DIR
@@ -73,7 +73,7 @@ def train(
                         epoch, ind_batch, len(dataloader), loss
                     )
                 )
-        if epoch % 5 == 0:
+        if epoch % SAVE_MODEL_EVERY_X_EPOCH == 0:
             save_model(
                 model=model, epoch=epoch, loss=loss.item(), save_dir=checkpoints_dir
             )
