@@ -27,6 +27,7 @@ class RoadsDatasetTrain(Dataset):
         self.root_dir = Path(root_dir)
         self.img_dir = self.root_dir / "images"
         self.gt_dir = self.root_dir / "groundtruth"
+        self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
 
 
         self.large_patch_size = large_patch_size
@@ -140,7 +141,7 @@ class RoadsDatasetTest(Dataset):
         self.image_initial_size = image_initial_size
 
     def __len__(self):
-        return self.number_patch_per_image * len(self.images)
+        return self.number_patch_per_image * len(self.img_names)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
