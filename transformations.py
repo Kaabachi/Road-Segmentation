@@ -1,8 +1,9 @@
+import random
+
 import cv2
 import numpy as np
 from torchvision import transforms
 from torchvision.transforms import functional as F
-import random
 
 
 class ToTensor(transforms.ToTensor):
@@ -10,7 +11,8 @@ class ToTensor(transforms.ToTensor):
         image = sample["image"]
         groundtruth = sample["groundtruth"]
         return {"image": F.to_tensor(image), "groundtruth": F.to_tensor(groundtruth)}
-    
+
+
 class RandomRotation(transforms.RandomRotation):
     """Rotate the image by angle.
 
@@ -40,14 +42,12 @@ class RandomRotation(transforms.RandomRotation):
         image = sample["image"]
         groundtruth = sample["groundtruth"]
         return {
-            "image": F.rotate(
-                image, angle, self.resample, self.expand, self.center
-            )
-            ,
+            "image": F.rotate(image, angle, self.resample, self.expand, self.center),
             "groundtruth": F.rotate(
                 groundtruth, angle, self.resample, self.expand, self.center
-            )
-        }    
+            ),
+        }
+
 
 class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
     def __call__(self, sample):
@@ -80,7 +80,8 @@ class RandomVerticalFlip(transforms.RandomVerticalFlip):
                 "groundtruth": F.vflip(sample["groundtruth"]),
             }
         return None
-    
+
+
 class Pad(transforms.Pad):
     """Pad the given PIL Image on all sides with the given "pad" value.
 
@@ -110,12 +111,15 @@ class Pad(transforms.Pad):
                 For example, padding [1, 2, 3, 4] with 2 elements on both sides in symmetric mode
                 will result in [2, 1, 1, 2, 3, 4, 4, 3]
     """
-    
+
     def __call__(self, sample):
         return {
             "image": F.pad(sample["image"], self.padding, self.fill, self.padding_mode),
-            "groundtruth": F.pad(sample["groundtruth"], self.padding, self.fill, self.padding_mode)
+            "groundtruth": F.pad(
+                sample["groundtruth"], self.padding, self.fill, self.padding_mode
+            ),
         }
+
 
 class CenterCrop(transforms.CenterCrop):
     """Crops the given PIL Image at the center.
@@ -125,6 +129,7 @@ class CenterCrop(transforms.CenterCrop):
             int instead of sequence like (h, w), a square crop (size, size) is
             made.
     """
+
     def __call__(self, sample):
         """
         Args:
@@ -135,9 +140,10 @@ class CenterCrop(transforms.CenterCrop):
         """
         return {
             "image": F.center_crop(sample["image"], self.size),
-            "groundtruth": F.center_crop(sample["groundtruth"], self.size)
+            "groundtruth": F.center_crop(sample["groundtruth"], self.size),
         }
-    
+
+
 class ColorJitter(transforms.ColorJitter):
     """Randomly change the brightness, contrast and saturation of an image.
 
@@ -165,7 +171,8 @@ class ColorJitter(transforms.ColorJitter):
             "image": transform(sample["image"]),
             "groundtruth": sample["groundtruth"],
         }
-    
+
+
 class Normalize(transforms.Normalize):
     """Normalize a tensor image with mean and standard deviation.
     Given mean: ``(M1,...,Mn)`` and std: ``(S1,..,Sn)`` for ``n`` channels, this transform
@@ -215,3 +222,9 @@ class Resize(transforms.Resize):
             sample["groundtruth"], self.size, self.interpolation
         )
         return {"image": resized_image, "groundtruth": resized_groundtruth}
+
+class ToPILImage(transforms.ToPILImage):
+    def __call__(self, sample):
+        pil_image = F.to_pil_image(sample["image"])
+        pil_groundtruth = F.to_pil_image(sample["groundtruth"])
+        return {"image": pil_image, "groundtruth": pil_groundtruth}
