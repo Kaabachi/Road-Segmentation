@@ -9,6 +9,9 @@ from helpers import pad_image, to_int, natural_keys
 from torchvision.transforms import functional as F
 import math
 
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD = [0.229, 0.224, 0.225]
+
 
 class RoadsDatasetTrain(Dataset):
     """Road segmentation datset"""
@@ -34,18 +37,17 @@ class RoadsDatasetTrain(Dataset):
         self.image_initial_size = image_initial_size
         self.patch_size = patch_size
 
-        self.img_transform = transforms.Compose(
-            [
-                transformations.ToPILImage(),
-                # TODO: Put right parameters for pad to get to 480x480
-                transformations.Pad(),
-            ]
-        )
-        self.patch_transforms = self._get_transforms()
-        self.images, self.groundtruths = self._extract_images()
+        # self.img_transform = transforms.Compose(
+        # [
+        # transformations.ToPILImage(),
+        ## TODO: Put right parameters for pad to get to 480x480
+        # transformations.Pad((self.large_patch_size - self.patch_size)//2)
+        # ]
+        # )
+        self.transforms = self._get_transforms()
 
     def __len__(self):
-        return self.number_patch_per_image * len(self.images)
+        return self.number_patch_per_image * len(self.img_names)
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
@@ -74,11 +76,10 @@ class RoadsDatasetTrain(Dataset):
 
         sample = {"image": small_image, "groundtruth": small_groundtruth}
 
-        transformation = self.patch_transforms
+        transformation = transformations.ToTensor()
         sample = transformation(sample)
 
         return sample
-
 
     def _get_image_and_gt(self, image_index):
         """
@@ -90,10 +91,9 @@ class RoadsDatasetTrain(Dataset):
         groundtruth = Image.open(self.gt_dir / image_name)
         image_sample = {"image": image, "groundtruth": groundtruth}
 
-        if self.img_transforms is not None:
-            image_sample = self.img_transforms(image_sample)
+        if self.transforms is not None:
+            image_sample = self.transforms(image_sample)
         return image_sample
-
 
     def _get_transforms(self):
 
@@ -112,8 +112,9 @@ class RoadsDatasetTrain(Dataset):
             transformations.CenterCrop(self.image_initial_size + 2 * padding),
             transformations.ColorJitter(),
             transformations.ToTensor(),
-            #TODO: Right params for normalize, can be the mean and std of imageNet
-            transformations.Normalize()
+            # TODO: Right params for normalize, can be the mean and std of imageNet
+            transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+            transformations.ToPILImage(),
         ]
 
         return transforms.Compose(transforms_list)
