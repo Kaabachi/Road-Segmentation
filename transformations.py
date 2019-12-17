@@ -63,7 +63,7 @@ class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
                 "image": F.hflip(sample["image"]),
                 "groundtruth": F.hflip(sample["groundtruth"]),
             }
-        return None
+        return sample
 
 
 class RandomVerticalFlip(transforms.RandomVerticalFlip):
@@ -79,7 +79,7 @@ class RandomVerticalFlip(transforms.RandomVerticalFlip):
                 "image": F.vflip(sample["image"]),
                 "groundtruth": F.vflip(sample["groundtruth"]),
             }
-        return None
+        return sample
     
 class Pad(transforms.Pad):
     """Pad the given PIL Image on all sides with the given "pad" value.
