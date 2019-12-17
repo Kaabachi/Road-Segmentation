@@ -5,12 +5,13 @@ import torch
 import torch.utils.data as data
 from torchvision import transforms
 
-from config import LARGE_BATCH_SIZE, NUMBER_PATCH_PER_SIZE, PADDING, PATCH_SIZE
+from config import LARGE_BATCH_SIZE, LARGE_PATCH_SIZE, PADDING, PATCH_SIZE
 from config import TEST_BATCH_SIZE as BATCH_SIZE
 from config import TEST_DATASET_DIR as DATASET_DIR
 from config import TEST_IMAGE_SIZE as IMAGE_SIZE
 from config import TEST_MODEL as MODEL
 from config import TEST_MODEL_WEIGTS as MODEL_WEIGHTS
+from config import TEST_NUMBER_PATCH_PER_IMAGE
 from datasets import RoadsDatasetTest
 
 
@@ -69,8 +70,8 @@ def predict(model, dataloader, model_weights=None):
 
         tmp_img[start_x:end_x, start_y:end_y] = small_patch
 
-        if (index[1] == math.sqrt(NUMBER_PATCH_PER_IMAGE) - 1) and (
-            index[2] == math.sqrt(NUMBER_PATCH_PER_IMAGE) - 1
+        if (index[1] == math.sqrt(TEST_NUMBER_PATCH_PER_IMAGE) - 1) and (
+            index[2] == math.sqrt(TEST_NUMBER_PATCH_PER_IMAGE) - 1
         ):
             save_image(tmp_img, index[0])
             tmp_img = torch.zeros(IMAGE_SIZE, IMAGE_SIZE)
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     dataset = RoadsDatasetTest(
         patch_size=PATCH_SIZE,
         large_patch_size=LARGE_PATCH_SIZE,
-        number_patch_per_image=NUMBER_PATCH_PER_IMAGE,
+        number_patch_per_image=TEST_NUMBER_PATCH_PER_IMAGE,
         image_initial_size=IMAGE_SIZE,
         root_dir=DATASET_DIR,
     )
