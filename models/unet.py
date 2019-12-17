@@ -40,7 +40,7 @@ def block(in_channels, out_channels, name):
 
 class UNet(nn.Module):
 
-    def __init__(self, in_channels=3, out_channels=1, init_filters=32):
+    def __init__(self, in_channels=3, out_channels=1, init_filters=64):
         super(UNet, self).__init__()
         self.model_name = "unet"
         filters = init_filters
