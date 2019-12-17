@@ -139,9 +139,6 @@ class RoadsDatasetTest(Dataset):
         self.number_patch_per_image = number_patch_per_image
         self.image_initial_size = image_initial_size
 
-        self.transforms = None
-        self.images = self._extract_images()
-
     def __len__(self):
         return self.number_patch_per_image * len(self.images)
 
@@ -161,7 +158,7 @@ class RoadsDatasetTest(Dataset):
         y = ((patch_index % n_s_p_p_i) * p_s) + padding
         x = ((patch_index // n_s_p_p_i) * p_s) + padding
 
-        image = self.images[image_index]
+        image = self._extract_image(self, image_index)
 
         small_image = F.crop(image, x - padding, y - padding, l_p_s, l_p_s)
 
@@ -178,15 +175,15 @@ class RoadsDatasetTest(Dataset):
 
         return sample
 
-    def _extract_images(self):
-        images = []
-
+    def _extract_image(self, image_index):
         padding = (self.large_patch_size - self.patch_size) // 2
-
-        for i in range(len(self.img_names)):
-            name = self.img_names[i]
-            image = Image.open(name)
-            transformed_image = transforms.Pad(padding, padding_mode="symmetric")(image)
-            images.append(transformed_image)
-
-        return images
+        image_name = self.img_names[image_index]
+        image = Image.open(image_name)
+        transformation = transforms.Compose(
+            [
+                #ImageNet normalization for now
+                transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+                transforms.Pad(padding, padding_mode="symmetric"),
+            ]
+        )
+        return transformation(image)
