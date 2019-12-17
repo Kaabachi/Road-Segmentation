@@ -34,6 +34,12 @@ class RoadsDatasetTrain(Dataset):
         self.gt_dir = self.root_dir / "groundtruth"
 
         self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
+        # keep only image with id >= 90
+        self.img_names = [
+            x
+            for x in self.img_names
+            if int(x.split("_")[1].split(".")[0]) < VALIDATION_ID_THRESHOLD
+        ]
         # Sort images to in a human readable way
         self.img_names.sort(key=natural_keys)
 
