@@ -223,8 +223,8 @@ class Resize(transforms.Resize):
         )
         return {"image": resized_image, "groundtruth": resized_groundtruth}
 
-    class ToPILImage(transforms.ToPILImage):
-        def __call__(self, sample):
-            pil_image = F.to_pil_image(sample["image"])
-            pil_groundtruth = F.to_pil_image(sample["groundtruth"])
-            return {"image": pil_image, "groundtruth": pil_groundtruth}
+class ToPILImage(transforms.ToPILImage):
+    def __call__(self, sample):
+        pil_image = F.to_pil_image(sample["image"])
+        pil_groundtruth = F.to_pil_image(sample["groundtruth"])
+        return {"image": pil_image, "groundtruth": pil_groundtruth}
