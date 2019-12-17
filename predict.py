@@ -5,23 +5,27 @@ import torch
 import torch.utils.data as data
 from torchvision import transforms
 
-from config import LARGE_BATCH_SIZE, LARGE_PATCH_SIZE, PADDING, PATCH_SIZE
+
+from config import LARGE_PATCH_SIZE, NUMBER_PATCH_PER_IMAGE, PADDING, PATCH_SIZE
+
 from config import TEST_BATCH_SIZE as BATCH_SIZE
 from config import TEST_DATASET_DIR as DATASET_DIR
 from config import TEST_IMAGE_SIZE as IMAGE_SIZE
 from config import TEST_MODEL as MODEL
-from config import TEST_MODEL_WEIGTS as MODEL_WEIGHTS
+
 from config import TEST_NUMBER_PATCH_PER_IMAGE
+from config import TEST_MODEL_WEIGHTS as MODEL_WEIGHTS
+
 from datasets import RoadsDatasetTest
 
 
 def save_image(image, i):
-    prediction_data_dir = "./Datasets/predictions/"
+    prediction_data_dir = "Predictions/"
 
     mask = image.clone().detach().cpu()
 
     img = transforms.ToPILImage()(mask)
-    img.save(prediction_data_dir + "img" + str(i) + ".png", "PNG")
+    img.save(prediction_data_dir + "img" + str(i+1) + ".png", "PNG")
 
 
 def crop(image):
