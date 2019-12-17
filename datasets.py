@@ -28,10 +28,19 @@ class RoadsDatasetTrain(Dataset):
         self.image_initial_size = image_initial_size
         self.patch_size = patch_size
         
-        self.transforms = self._get_transforms()
+        #Get the list of transformations to be used for Data Augmentation on the whole image
+        self.whole_image_transforms = self._get_whole_image_transforms()
+        
+        #Get the list of transformations to be used on individual 96x96 patches when sampled
+        self.patch_transforms = self._get_patch_transforms()
+        
+        #Load all 400x400 images and groundtruths to memory and applying whole image transformations on them
+        #Gives a length of nb_images * nb_transforms
         self.images, self.groundtruths = self._extract_images()
 
     def __len__(self):
+        #number_patch_per_image is the number of 96x96 patches that can be extracted from a 400x400 image
+        #Those 96x96 patches overlap in plenty of pixels, apart from the 16x16 center patches
         return self.number_patch_per_image * len(self.images)
 
     def __getitem__(self, idx):
@@ -44,35 +53,40 @@ class RoadsDatasetTrain(Dataset):
         p_s = self.patch_size
         l_p_s = self.large_patch_size
         
+        #image_index is in the range of (0, nb_images * nb_transforms-1)
         image_index = idx//n_p_p_i
+        
+        #patch_index is in the range of (0, number_patch_per_image-1)
         patch_index = idx%n_p_p_i
         
         padding = (l_p_s - p_s) // 2
         
+        #computing x,y coordinates of the top-left corner of the patch
         y = ((patch_index % n_s_p_p_i) * p_s)+padding
         x = ((patch_index // n_s_p_p_i) * p_s)+padding
 
         image = self.images[image_index]
         groundtruth = self.groundtruths[image_index]
         
+        #Cropping only the needed patches
         small_image = F.crop(image,x-padding,y-padding,l_p_s,l_p_s)
         small_groundtruth = F.crop(groundtruth,x-padding,y-padding,l_p_s,l_p_s)
         
         sample = {"image": small_image, "groundtruth": small_groundtruth}
-
-        transformation = transforms.Compose(
-            [transformations.ToTensor()]
-        )
+        
+        #Applying patch transforms before returning the sample
+        transformation = self.patch_transforms
         
         sample = transformation(sample)
 
         return sample
     
+    #Extract images and their transformed versions from disk and loading them to memory without dividing them to patches
     def _extract_images(self):
         images = []
         groundtruths = []
   
-        transforms = self.transforms
+        transforms = self.whole_image_transforms
         
         for i in range(len(self.img_names)):
             name = self.img_names[i]
@@ -90,7 +104,14 @@ class RoadsDatasetTrain(Dataset):
         
         return images, groundtruths
 
-    def _get_transforms(self):
+    def _get_patch_transforms(self):
+        transform = transforms.Compose(
+            [transformations.ToTensor()]
+        )
+        
+        return transform
+    
+    def _get_whole_image_transforms(self):
         transforms_list = []
         
         padding = (self.large_patch_size - self.patch_size)//2
@@ -99,23 +120,29 @@ class RoadsDatasetTrain(Dataset):
         im_size2 = self.image_initial_size
         
         rot_padding = math.ceil(math.ceil((im_size1 * math.sqrt(2)) - im_size2) / 2)
-    
+        
+        #Pads the image with the given padding and fill the surplus of pixels by mirroring 
         transform0 = transformations.Pad(padding, padding_mode="symmetric")
         
         transforms_list.append(transform0)
     
+        #Flips the image Horizontally
         transform1 = transforms.Compose(
             [transform0, transformations.RandomHorizontalFlip(p=1)]
         )
         
         transforms_list.append(transform1)
-    
+        
+        #Flips the image Vertically
         transform2 = transforms.Compose(
             [transform0, transformations.RandomVerticalFlip(p=1)]
         )
         
         transforms_list.append(transform2)
-    
+        
+        #Pads the image with mirroring just enough so that the final crop to get a 480x480 image doesn't have any black pixels
+        #Then rotates the padded image with a random angle between -90 and 90
+        #Crops the image to the desired 480x480 size
         transform3 = transforms.Compose(
             [transformations.Pad(rot_padding, padding_mode="symmetric"), 
              transformations.RandomRotation(degrees=90), 
@@ -124,16 +151,18 @@ class RoadsDatasetTrain(Dataset):
         )
 
         transforms_list.append(transform3)
-    
-        transform4 = transforms.Compose(
-            [transform0, transformations.ColorJitter()]
-        )
         
-        transforms_list.append(transform4)
+        #Randomly jitters the brightness, contrast, saturation and hue of the image
+#         transform4 = transforms.Compose(
+#             [transform0, transformations.ColorJitter(0.5,0.5,0.5,0.5)]
+#         )
+        
+#         transforms_list.append(transform4)
         
         return transforms_list
         
 
+#Pretty much same structure as the RoadsDatasetTrain
 class RoadsDatasetTest(Dataset):
     """Road segmentation dataset for test time"""
 
