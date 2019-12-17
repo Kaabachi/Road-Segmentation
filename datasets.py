@@ -59,6 +59,8 @@ class RoadsDatasetTrain(Dataset):
         self.transforms = self._get_transforms()
 
     def __len__(self):
+        #number_patch_per_image is the number of 96x96 patches that can be extracted from a 400x400 image
+        #Those 96x96 patches overlap in plenty of pixels, apart from the 16x16 center patches
         return self.number_patch_per_image * len(self.img_names)
 
     def __getitem__(self, idx):
@@ -70,12 +72,17 @@ class RoadsDatasetTrain(Dataset):
         n_s_p_p_i = self.image_initial_size // self.patch_size
         p_s = self.patch_size
         l_p_s = self.large_patch_size
-
+       
+    
+        #image_index is in the range of (0, nb_images * nb_transforms-1)
         image_index = idx // n_p_p_i
+ 
+        #patch_index is in the range of (0, number_patch_per_image-1)
         patch_index = idx % n_p_p_i
 
         padding = (l_p_s - p_s) // 2
 
+        #computing x,y coordinates of the top-left corner of the patch
         y = ((patch_index % n_s_p_p_i) * p_s) + padding
         x = ((patch_index // n_s_p_p_i) * p_s) + padding
 
@@ -83,6 +90,7 @@ class RoadsDatasetTrain(Dataset):
         image = image_sample["image"]
         groundtruth = image_sample["groundtruth"]
 
+        #Cropping only the needed patches
         small_image = F.crop(image, x - padding, y - padding, l_p_s, l_p_s)
         small_groundtruth = F.crop(groundtruth, x - padding, y - padding, l_p_s, l_p_s)
 
@@ -116,15 +124,32 @@ class RoadsDatasetTrain(Dataset):
 
         rot_padding = math.ceil(math.ceil((im_size1 * math.sqrt(2)) - im_size2) / 2)
         transforms_list = [
+            
+            #Pads the image with the given padding and fill the surplus of pixels by mirroring 
             transformations.Pad(padding, padding_mode="symmetric"),
+            
+            #Apply Horizontal flip
             transformations.RandomHorizontalFlip(p=1),
+            
+            #Apply Vertical flip
             transformations.RandomVerticalFlip(p=1),
+            
+            #Pads the image with the given padding and fill the surplus of pixels by mirroring 
             transformations.Pad(rot_padding, padding_mode="symmetric"),
+            
+            #Apply rotation to image
             transformations.RandomRotation(degrees=90),
+            
+            #Crop image at the center
             transformations.CenterCrop(self.image_initial_size + 2 * padding),
+        
+            #Randomly jitters the brightness, contrast, saturation and hue of the image
             transformations.ColorJitter(),
+            
+            #Changes image to Tensor
             transformations.ToTensor(),
             # TODO: Right params for normalize, can be the mean and std of imageNet
+
             transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
             transformations.ToPILImage(),
         ]
@@ -146,8 +171,7 @@ class RoadsDatasetTest(Dataset):
         self.root_dir = Path(root_dir)
         self.img_names = [str(x) for x in self.root_dir.glob("**/*.png") if x.is_file()]
 
-        # Sort images to in a human readable way
-        self.img_names.sort(key=natural_keys)
+
         
         self.patch_size = patch_size
         self.large_patch_size = large_patch_size
@@ -155,6 +179,8 @@ class RoadsDatasetTest(Dataset):
         self.image_initial_size = image_initial_size
 
     def __len__(self):
+        #number_patch_per_image is the number of 96x96 patches that can be extracted from a 608x608 image
+        #Those 96x96 patches overlap in plenty of pixels, apart from the 16x16 center patches
         return self.number_patch_per_image * len(self.img_names)
 
     def __getitem__(self, idx):
@@ -173,7 +199,7 @@ class RoadsDatasetTest(Dataset):
         y = ((patch_index % n_s_p_p_i) * p_s) + padding
         x = ((patch_index // n_s_p_p_i) * p_s) + padding
 
-        image = self._extract_image(self, image_index)
+        image = self._extract_image(image_index)
 
         small_image = F.crop(image, x - padding, y - padding, l_p_s, l_p_s)
 
@@ -193,15 +219,20 @@ class RoadsDatasetTest(Dataset):
     def _extract_image(self, image_index):
         padding = (self.large_patch_size - self.patch_size) // 2
         image_name = self.img_names[image_index]
-        image = Image.open(self.img_dir / image_name)
+        image = Image.open(image_name)
         transformation = transforms.Compose(
             [
-                # ImageNet normalization for now
-                transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-                transforms.Pad(padding, padding_mode="symmetric"),
+            # ImageNet normalization for now
+            transforms.Pad(padding, padding_mode="symmetric"),
+            transforms.ToTensor(),
+            # TODO: Right params for normalize, can be the mean and std of imageNet
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+            transforms.ToPILImage(),
+
             ]
         )
         return transformation(image)
+    
 
 
 class RoadsDatasetValidation(Dataset):
@@ -230,6 +261,8 @@ class RoadsDatasetValidation(Dataset):
         self.image_initial_size = image_initial_size
 
     def __len__(self):
+        #number_patch_per_image is the number of 96x96 patches that can be extracted from a 400x400 image
+        #Those 96x96 patches overlap in plenty of pixels, apart from the 16x16 center patches
         return self.number_patch_per_image * len(self.images)
 
     def __getitem__(self, idx):
@@ -248,7 +281,7 @@ class RoadsDatasetValidation(Dataset):
         y = ((patch_index % n_s_p_p_i) * p_s) + padding
         x = ((patch_index // n_s_p_p_i) * p_s) + padding
 
-        image_sample = self._extract_image(self, image_index)
+        image_sample = self._extract_image(image_index)
         image = image_sample["image"]
         groundtruth = image_sample["groundtruth"]
 
@@ -282,8 +315,11 @@ class RoadsDatasetValidation(Dataset):
         transformation = transforms.Compose(
             [
                 # ImageNet normalization for now
+                transformations.ToTensor(),
                 transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+                transformations.ToPILImage(),
                 transforms.Pad(padding, padding_mode="symmetric"),
+
             ]
         )
         return transformation(sample)
