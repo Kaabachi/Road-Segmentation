@@ -17,6 +17,7 @@ class EnsembleModel(nn.Module):
         self.finalconv = nn.Conv2d(
             in_channels=5, out_channels=1, kernel_size=1
         )
+        self.finalsigmoid = nn.Sigmoid()
         
     def forward(self, x, infos_angle, infos_flip):
         x_models = []
@@ -71,4 +72,4 @@ class EnsembleModel(nn.Module):
         
         final = self.finalconv(stacked)
         
-        return torch.sigmoid(final)
+        return self.finalsigmoid(final)

@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+from torchvision.transforms import functional as F
 
 from collections import OrderedDict
 
@@ -81,6 +82,8 @@ class UNet(nn.Module):
         self.finalconv = nn.Conv2d(
             in_channels=filters, out_channels=out_channels, kernel_size=1
         )
+        
+        self.finalsigmoid = nn.Sigmoid()
 
     def forward(self, x):
         enc1 = self.encoder1(x)
@@ -106,4 +109,4 @@ class UNet(nn.Module):
         dec1 = torch.cat((dec1, enc1), dim=1)
         dec1 = self.decoder1(dec1)
         
-        return self.finalconv(dec1)
+        return self.finalsigmoid(self.finalconv(dec1))
