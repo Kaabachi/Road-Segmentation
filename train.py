@@ -51,15 +51,16 @@ def train(
     for epoch in range(epochs):
         model.train()
         for ind_batch, sample_batched in enumerate(dataloader):
-            images = sample_batched["image"]
+            images = sample_batched["images"]
             groundtruths = sample_batched["groundtruth"]
             if cuda:
                 images = images.to(device="cuda")
                 groundtruths = groundtruths.to(device="cuda")
 
             optimizer.zero_grad()
-
-            output = model(images)
+            
+            
+            output = model(images, sample_batched['infos_angle'], sample_batched['infos_flip'])
 
             loss = criterion(output, groundtruths)
 

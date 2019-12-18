@@ -20,7 +20,7 @@ def block(in_channels, out_channels, name):
                         ),
                     ),
                     (name + "norm1", nn.BatchNorm2d(num_features=out_channels)),
-                    (name + "relu1", nn.ReLU(inplace=True)),
+                    (name + "relu1", nn.ReLU()),
                     (
                         name + "conv2",
                         nn.Conv2d(
@@ -32,7 +32,7 @@ def block(in_channels, out_channels, name):
                         ),
                     ),
                     (name + "norm2", nn.BatchNorm2d(num_features=out_channels)),
-                    (name + "relu2", nn.ReLU(inplace=True)),
+                    (name + "relu2", nn.ReLU()),
                 ]
             )
         )
@@ -40,7 +40,7 @@ def block(in_channels, out_channels, name):
 
 class UNet(nn.Module):
 
-    def __init__(self, in_channels=3, out_channels=1, init_filters=64):
+    def __init__(self, in_channels=3, out_channels=1, init_filters=32):
         super(UNet, self).__init__()
         self.model_name = "unet"
         filters = init_filters
@@ -106,4 +106,4 @@ class UNet(nn.Module):
         dec1 = torch.cat((dec1, enc1), dim=1)
         dec1 = self.decoder1(dec1)
         
-        return torch.sigmoid(self.finalconv(dec1))
+        return self.finalconv(dec1)

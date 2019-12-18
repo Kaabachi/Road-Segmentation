@@ -84,11 +84,30 @@ class RoadsDatasetTrain(Dataset):
         
         sample = {"image": small_image, "groundtruth": small_groundtruth}
         
-        #Applying patch transforms before returning the sample
-        transformation = self.patch_transforms
+        small_images = []
+        infos_angle = [0,0,0]
+        infos_flip = [[False, False], [False, True], [True, False]]
+        infos_angle_i = 0
+        infos_flip_i = []
         
-        sample = transformation(sample)
-
+        #Applying patch transforms before returning the sample
+        transformations = self.patch_transforms
+        
+        for i in range(len(transformations)):
+            if i <= 2 :
+                small_images.append(transformations[i](small_image))
+            else:
+                custom_sample = {'image': small_image, 'angle': None, 'hflip': False, 'vflip': False}
+                transformed = transformations[i](custom_sample)
+                infos_flip_i = [transformed['hflip'], transformed['vflip']]
+                infos_angle_i = transformed['angle']
+                infos_flip.append(infos_flip_i)
+                infos_angle.append(infos_angle_i)
+                small_images.append(transformations[0](transformed['image']))
+                
+#         sample = transformation(sample)
+        sample = {'images': torch.cat(small_images, dim=0), 'groundtruth': transforms.ToTensor()(small_groundtruth), 'infos_angle': infos_angle, 'infos_flip' : infos_flip}
+    
         return sample
     
     #Extract images and their transformed versions from disk and loading them to memory without dividing them to patches
@@ -113,17 +132,46 @@ class RoadsDatasetTrain(Dataset):
         return images, groundtruths
 
     def _get_patch_transforms(self):
-        transform = transforms.Compose(
-            [transformations.RandomVerticalFlip(),
-             transformations.RandomHorizontalFlip(),
-             transformations.RandomRotation(degrees=90),
-             transformations.CenterCrop(self.large_patch_size),
-             transformations.ToTensor(),
-             transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
-            ]
-        )
         
-        return transform
+#         transform = transforms.Compose(
+#             [transformations.RandomVerticalFlip(),
+#              transformations.RandomHorizontalFlip(),
+#              transformations.RandomRotation(degrees=90),
+#              transformations.CenterCrop(self.large_patch_size),
+#              transformations.ToTensor(),
+#              transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+#             ]
+#         )
+        transforms_patch = []
+    
+        transform0 = transforms.Compose(
+            [transforms.ToTensor(),
+             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+            ])
+            
+        transform1 = transforms.Compose(
+            [transforms.RandomVerticalFlip(p=1),
+             transform0])
+             
+        transform2 = transforms.Compose(
+            [transforms.RandomHorizontalFlip(p=1),
+             transform0])
+         
+        transform3 = transforms.Compose(
+            [transformations.RandomRotationCustom(degrees=90)])    
+            
+        transform4 = transforms.Compose(
+            [transformations.RandomVerticalFlipCustom(p=0.25),
+             transformations.RandomHorizontalFlipCustom(p=0.25),
+             transformations.RandomRotationCustom(degrees=45)])
+
+        transforms_patch.append(transform0)
+        transforms_patch.append(transform1)
+        transforms_patch.append(transform2)
+        transforms_patch.append(transform3)
+        transforms_patch.append(transform4)
+        
+        return transforms_patch
     
     def _get_whole_image_transforms(self):
         transforms_list = []

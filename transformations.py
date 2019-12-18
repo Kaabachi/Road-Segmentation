@@ -215,3 +215,77 @@ class Resize(transforms.Resize):
             sample["groundtruth"], self.size, self.interpolation
         )
         return {"image": resized_image, "groundtruth": resized_groundtruth}
+    
+    
+    
+class RandomRotationCustom(transforms.RandomRotation):
+    """Rotate the image by angle.
+
+        Args:
+            degrees (sequence or float or int): Range of degrees to select from.
+                If degrees is a number instead of sequence like (min, max), the range of degrees
+                will be (-degrees, +degrees).
+            resample ({PIL.Image.NEAREST, PIL.Image.BILINEAR, PIL.Image.BICUBIC}, optional):
+                An optional resampling filter. See `filters`_ for more information.
+                If omitted, or if the image has mode "1" or "P", it is set to PIL.Image.NEAREST.
+            expand (bool, optional): Optional expansion flag.
+                If true, expands the output to make it large enough to hold the entire rotated image.
+                If false or omitted, make the output image the same size as the input image.
+                Note that the expand flag assumes rotation around the center and no translation.
+            center (2-tuple, optional): Optional center of rotation.
+                Origin is the upper left corner.
+                Default is the center of the image.
+            fill (3-tuple or int): RGB pixel fill value for area outside the rotated image.
+                If int, it is used for all channels respectively.
+
+        .. _filters: https://pillow.readthedocs.io/en/latest/handbook/concepts.html#filters
+
+        """
+
+    def __call__(self, sample):
+        angle = self.get_params(self.degrees)
+        image = sample["image"]
+        return {
+            "image": F.rotate(
+                image, angle, self.resample, self.expand, self.center
+            ), 
+            'angle': angle, 
+            'hflip': sample['hflip'], 
+            'vflip': sample['vflip']
+        }    
+
+class RandomHorizontalFlipCustom(transforms.RandomHorizontalFlip):
+    def __call__(self, sample):
+        """
+        Args:
+            sample (dict of PIL Images): Image to be flipped.
+
+        Returns:
+            PIL Image: Randomly flipped image.
+        """
+        if random.random() < self.p:
+            return {
+                "image": F.hflip(sample["image"]),
+                'angle': sample['angle'], 
+                'hflip': True, 
+                'vflip': sample['vflip']
+            }
+        return sample
+
+
+class RandomVerticalFlipCustom(transforms.RandomVerticalFlip):
+    """Vertically flip the given PIL Image randomly with a given probability.
+
+    Args:
+        p (float): probability of the image being flipped. Default value is 0.5
+    """
+
+    def __call__(self, sample):
+        if random.random() < self.p:
+            return {
+                "image": F.hflip(sample["image"]),
+                'angle': sample['angle'], 
+                'hflip': sample['hflip'], 
+                'vflip': True
+            }
+        return sample
