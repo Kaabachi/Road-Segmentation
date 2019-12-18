@@ -59,7 +59,6 @@ def train(
 
             optimizer.zero_grad()
             
-            
             output = model(images, sample_batched['infos_angle'], sample_batched['infos_flip'])
 
             loss = criterion(output, groundtruths)

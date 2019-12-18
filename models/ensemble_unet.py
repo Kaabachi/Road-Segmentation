@@ -7,6 +7,7 @@ from torchvision import transforms
 class EnsembleModel(nn.Module):
     def __init__(self):
         super(EnsembleModel, self).__init__()
+        self.model_name = "ensemble-unet"
         self.model0 = UNet()
         self.model1 = UNet()
         self.model2 = UNet()
@@ -33,32 +34,34 @@ class EnsembleModel(nn.Module):
         outputs.append(self.model2(x_models[2]))
         outputs.append(self.model3(x_models[3]))
         outputs.append(self.model4(x_models[4]))
+
+#         print(infos_flip.size())
+#         print(infos_angle.size())
         
-        for k in range(len(infos_angle)):
-            for i in range(len(infos_angle[k])):
-                
-                if infos_angle[k][i] != 0 :
-                    outputs[k][i] = transforms.ToTensor()(
+        for i in range(infos_angle.size()[0]):
+            for j in range(infos_angle.size()[1]):
+                if infos_angle[i][j] != 0 :
+                    outputs[j][i] = transforms.ToTensor()(
                         F.rotate(
-                            transforms.ToPILImage()(outputs[k][i]),
-                            -infos_angle[k][i],
+                            transforms.ToPILImage()(outputs[j][i]),
+                            -infos_angle[i][j],
                             resample=False,
                             expand=False,
                             center=None
                         )
                     )
 
-                if infos_flip[k][i][0]:
-                    outputs[k][i] = transforms.ToTensor()(
+                if infos_flip[i][j][0]:
+                    outputs[j][i] = transforms.ToTensor()(
                         F.hflip(
-                            transforms.ToPILImage()(outputs[k][i])
+                            transforms.ToPILImage()(outputs[j][i])
                             )
                     )
 
-                if infos_flip[k][i][1]:
-                    outputs[k][i] = transforms.ToTensor()(
+                if infos_flip[i][j][1]:
+                    outputs[j][i] = transforms.ToTensor()(
                         F.vflip(
-                            transforms.ToPILImage()(outputs[k][i])
+                            transforms.ToPILImage()(outputs[j][i])
                         )
                     )
                 

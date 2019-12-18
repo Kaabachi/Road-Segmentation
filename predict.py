@@ -46,11 +46,13 @@ def predict(model, dataloader, model_weights=None):
         print("CUDA is NOT available")
 
     for ind_batch, sample_batched in enumerate(dataloader):
-        batch_images = sample_batched["image"]
+        batch_images = sample_batched["images"]
+        
+#         print(sample_batched["infos_flip"])
         if cuda:
             batch_images = batch_images.to(device="cuda")
         with torch.no_grad():
-            output = model(batch_images)
+            output = model(batch_images, sample_batched['infos_angle'], sample_batched['infos_flip'])
 
         final = output[0][0].clone().detach().cpu()
         final[final > THRESHOLD] = 1

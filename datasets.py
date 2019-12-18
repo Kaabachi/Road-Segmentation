@@ -106,7 +106,7 @@ class RoadsDatasetTrain(Dataset):
                 small_images.append(transformations[0](transformed['image']))
                 
 #         sample = transformation(sample)
-        sample = {'images': torch.cat(small_images, dim=0), 'groundtruth': transforms.ToTensor()(small_groundtruth), 'infos_angle': infos_angle, 'infos_flip' : infos_flip}
+        sample = {'images': torch.cat(small_images, dim=0), 'groundtruth': transforms.ToTensor()(small_groundtruth), 'infos_angle': torch.tensor(infos_angle), 'infos_flip' : torch.tensor(infos_flip)}
     
         return sample
     
@@ -237,7 +237,7 @@ class RoadsDatasetTest(Dataset):
         self.number_patch_per_image = number_patch_per_image
         self.image_initial_size = image_initial_size
         
-        self.transforms = None
+        self.patch_transforms = self._get_patch_transforms()
         self.images = self._extract_images()
         
     def __len__(self):
@@ -267,17 +267,45 @@ class RoadsDatasetTest(Dataset):
         y = (y-padding)//p_s
         
         sample = small_image
-       
-        transformation = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
-            ]
-        )
         
-        sample = transformation(sample)
+        small_images = []
+        infos_angle = [0,0,0]
+        infos_flip = [[False, False], [False, True], [True, False]]
+        infos_angle_i = 0
+        infos_flip_i = []
+        
+        #Applying patch transforms before returning the sample
+        transformations = self.patch_transforms
+        
+        for i in range(len(transformations)):
+            if i <= 2 :
+                small_images.append(transformations[i](small_image))
+            else:
+                custom_sample = {'image': small_image, 'angle': None, 'hflip': False, 'vflip': False}
+                transformed = transformations[i](custom_sample)
+                infos_flip_i = [transformed['hflip'], transformed['vflip']]
+                infos_angle_i = transformed['angle']
+                infos_flip.append(infos_flip_i)
+                infos_angle.append(infos_angle_i)
+                small_images.append(transformations[0](transformed['image']))
+                
+#         sample = transformation(sample)
+        sample = {'images': torch.cat(small_images, dim=0), 'infos_angle': torch.tensor(infos_angle), 'infos_flip' : torch.tensor(infos_flip),
+                  "id": image_index, "x" : x, "y" : y
+                 }
+    
+#         print(sample['infos_flip'])
+        
+#         transformation = transforms.Compose(
+#             [
+#                 transforms.ToTensor(),
+#                 transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+#             ]
+#         )
+        
+#         sample = transformation(sample)
             
-        sample = {"id": image_index, "x" : x, "y" : y, "image": sample}
+#         sample = {"id": image_index, "x" : x, "y" : y, "image": sample}
 
         return sample
     
@@ -293,3 +321,45 @@ class RoadsDatasetTest(Dataset):
             images.append(transformed_image)
                 
         return images
+    
+    def _get_patch_transforms(self):
+        
+#         transform = transforms.Compose(
+#             [transformations.RandomVerticalFlip(),
+#              transformations.RandomHorizontalFlip(),
+#              transformations.RandomRotation(degrees=90),
+#              transformations.CenterCrop(self.large_patch_size),
+#              transformations.ToTensor(),
+#              transformations.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+#             ]
+#         )
+        transforms_patch = []
+    
+        transform0 = transforms.Compose(
+            [transforms.ToTensor(),
+             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+            ])
+            
+        transform1 = transforms.Compose(
+            [transforms.RandomVerticalFlip(p=1),
+             transform0])
+             
+        transform2 = transforms.Compose(
+            [transforms.RandomHorizontalFlip(p=1),
+             transform0])
+         
+        transform3 = transforms.Compose(
+            [transformations.RandomRotationCustom(degrees=90)])    
+            
+        transform4 = transforms.Compose(
+            [transformations.RandomVerticalFlipCustom(p=0.25),
+             transformations.RandomHorizontalFlipCustom(p=0.25),
+             transformations.RandomRotationCustom(degrees=45)])
+
+        transforms_patch.append(transform0)
+        transforms_patch.append(transform1)
+        transforms_patch.append(transform2)
+        transforms_patch.append(transform3)
+        transforms_patch.append(transform4)
+        
+        return transforms_patch
