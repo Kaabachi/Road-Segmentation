@@ -23,6 +23,17 @@ def pad(image, paddingh, paddingw, mirror=True):
         new_image[:,paddingw+w:] = cv2.flip(new_image[:,w:w+paddingw],1)
     return new_image
 
+def post_processing():
+    for i in range(1, 51):
+        image_filename = "Predictions/img" +  str(i) + ".png"
+        img = cv2.imread(image_filename)
+        kernel = np.ones((10,10),np.uint8)
+        img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+        img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+        cv2.imwrite(image_filename, img );
+
+
+
 # get padding adequate to the size wanted
 def pad_image(image,x_dim,y_dim, pad):
     padded_image = pad(image,(x_dim-16)//2, (y_dim-16)//2)
@@ -100,3 +111,4 @@ def natural_keys(text):
     alist.sort(key=natural_keys) sorts in human order
     '''
     return [ to_int(c) for c in re.split(r'(\d+)', text) ]
+

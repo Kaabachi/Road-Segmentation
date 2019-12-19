@@ -26,12 +26,6 @@ class RoadsDatasetTrain(Dataset):
         self.img_names = [x.name for x in self.img_dir.glob("**/*.png") if x.is_file()]
         # Sort images to in a human readable way
         self.img_names.sort(key=natural_keys)
-        # keep only image with id <= Validation threshhold
-#         self.img_names = [
-#             x
-#             for x in self.img_names
-#             if int(x.split("_")[1].split(".")[0]) < VALIDATION_ID_THRESHOLD
-#         ]
 
         self.large_patch_size = large_patch_size
         self.number_patch_per_image = number_patch_per_image
@@ -139,39 +133,7 @@ class RoadsDatasetTrain(Dataset):
         transform0 = transformations.Pad(padding, padding_mode="symmetric")
         
         transforms_list.append(transform0)
-    
-#         #Flips the image Horizontally
-#         transform1 = transforms.Compose(
-#             [transform0, transformations.RandomHorizontalFlip(p=1)]
-#         )
-        
-#         transforms_list.append(transform1)
-        
-#         #Flips the image Vertically
-#         transform2 = transforms.Compose(
-#             [transform0, transformations.RandomVerticalFlip(p=1)]
-#         )
-        
-#         transforms_list.append(transform2)
-        
-#         #Pads the image with mirroring just enough so that the final crop to get a 480x480 image doesn't have any black pixels
-#         #Then rotates the padded image with a random angle between -90 and 90
-#         #Crops the image to the desired 480x480 size
-#         transform3 = transforms.Compose(
-#             [transformations.Pad(rot_padding, padding_mode="symmetric"), 
-#              transformations.RandomRotation(degrees=90), 
-#              transformations.CenterCrop(self.image_initial_size+2*padding)
-#             ]
-#         )
 
-#         transforms_list.append(transform3)
-        
-#         #Randomly jitters the brightness, contrast, saturation and hue of the image
-#         transform4 = transforms.Compose(
-#             [transform0, transformations.ColorJitter(0.5,0.5,0.5,0.5)]
-#         )
-        
-#         transforms_list.append(transform4)
         
         return transforms_list
         
