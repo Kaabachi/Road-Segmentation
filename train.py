@@ -20,14 +20,17 @@ from models.resnet import ResNet
 from models.unet import UNet
 
 
-def save_model(model, epoch, loss, save_dir):
-    model_name = model.model_name
-    timestr = time.strftime("%Y%m%d-%H%M%S")
-    file_name = f"{timestr}_{model_name}_epoch_{epoch}_loss_{loss:03.3f}.pt"
-    Path(save_dir).mkdir(exist_ok=True)
-    file_path = Path(save_dir) / file_name
-    torch.save(model.state_dict(), str(file_path))
-
+def save_model(model, epoch=None, loss=None, save_dir=None, specific_name=None):
+    if epoch and loss and save_dir and specific_name:
+        model_name = model.model_name
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        file_name = f"{timestr}_{model_name}_epoch_{epoch}_loss_{loss:03.3f}.pt"
+        Path(save_dir).mkdir(exist_ok=True)
+        file_path = Path(save_dir) / file_name
+        torch.save(model.state_dict(), str(file_path))
+    elif save_dir and specific_name:
+        file_path = Path(save_dir) / specific_name
+        torch.save(model.state_dict(), str(file_path))
 
 def train(
     model,
@@ -36,6 +39,7 @@ def train(
     criterion,
     model_weights=None,
     checkpoints_dir=CHECKPOINTS_DIR,
+    last_checkpoint=None,
 ):
 
     cuda = torch.cuda.is_available()
@@ -73,11 +77,20 @@ def train(
                         epoch, ind_batch, len(dataloader), loss
                     )
                 )
-        if epoch % SAVE_MODEL_EVERY_X_EPOCH == 0:
+
+        if SAVE_MODEL_EVERY_X_EPOCH and (epoch % SAVE_MODEL_EVERY_X_EPOCH == 0):
             save_model(
                 model=model, epoch=epoch, loss=loss.item(), save_dir=checkpoints_dir
             )
             print(f"model saved to {str(checkpoints_dir)}")
+    save_model(
+        model=model,
+        epoch=None,
+        loss=None,
+        save_dir=checkpoints_dir,
+        specific_name=last_checkpoint,
+    )
+
 
 
 if __name__ == "__main__":

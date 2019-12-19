@@ -35,7 +35,7 @@ def crop(image):
 def predict(model, dataloader, model_weights=None):
 
     if model_weights is not None:
-        model.load_state_dict(torch.load(model_weights))
+        model.load_state_dict(torch.load(str(model_weights)))
 
     model.eval()
 
