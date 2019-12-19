@@ -25,7 +25,7 @@ def save_image(image, i):
     mask = image.clone().detach().cpu()
 
     img = transforms.ToPILImage()(mask)
-    img.save(prediction_data_dir + "img" + str(i+1) + ".png", "PNG")
+    img.save(prediction_data_dir + "img" + str(i + 1) + ".png", "PNG")
 
 
 def crop(image):
@@ -35,7 +35,7 @@ def crop(image):
 def predict(model, dataloader, model_weights=None):
 
     if model_weights is not None:
-        model.load_state_dict(torch.load(model_weights))
+        model.load_state_dict(torch.load(str(model_weights)))
 
     model.eval()
 
