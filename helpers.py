@@ -23,13 +23,19 @@ def pad(image, paddingh, paddingw, mirror=True):
         new_image[:,paddingw+w:] = cv2.flip(new_image[:,w:w+paddingw],1)
     return new_image
 
+# Take an predictions and remove noise from them using morphological closing then opening.
 def post_processing():
     for i in range(1, 51):
+        #read images
         image_filename = "Predictions/img" +  str(i) + ".png"
         img = cv2.imread(image_filename)
+        
+        #kernel to use in convolution
         kernel = np.ones((10,10),np.uint8)
         img = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
         img = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+        
+        #replace old image with new one
         cv2.imwrite(image_filename, img );
 
 
