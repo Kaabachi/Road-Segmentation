@@ -29,6 +29,7 @@ from predict import predict
 from train import train
 from models.unet import UNet
 import torch
+import subprocess
 
 
 if __name__ == "__main__":
@@ -51,7 +52,5 @@ if __name__ == "__main__":
         model=model,
         dataloader=test_dataloader,
     )
-    predictions = [
-        str(x) for x in Path(PREDICTIONS_DIR).glob("**/*.png") if x.is_file()
-    ]
-    masks_to_submission(str(Path(SUBMISSION_DIR) / FINAL_SUBMISSION), predictions)
+    
+
