@@ -21,6 +21,20 @@ from models.unet import UNet
 
 
 def save_model(model, epoch=None, loss=None, save_dir=None, specific_name=None):
+    """Saves a checkpoint of the model state
+
+        Args:
+            model (nn.Module) : Model to be saved
+
+            epoch : The epoch of this checkpoint
+            
+            loss : The loss of the last batch of this checkpoint
+            
+            save_dir : path for where to save the checkpoint
+            
+            specifi_name : a specific name to give to the checkpoint
+
+        """
     if epoch and loss and save_dir and specific_name:
         model_name = model.model_name
         timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -41,6 +55,22 @@ def train(
     checkpoints_dir=CHECKPOINTS_DIR,
     last_checkpoint=None,
 ):
+    """Trains the model
+
+        Args:
+            model (nn.Module) : Model to be trained
+            
+            dataloader : The dataloader of the training set
+
+            epochs (int) : Number of epochs to train the model
+            
+            criterion : Loss function for the training
+            
+            checkpoints_dir : path for where to save the checkpoints
+            
+            model_weights : a dict containing the state of the weights with which to initialize our model
+
+        """
 
     cuda = torch.cuda.is_available()
     if cuda:
@@ -82,6 +112,7 @@ def train(
             save_model(
                 model=model, epoch=epoch, loss=loss.item(), save_dir=checkpoints_dir
             )
+#             Every SAVE_MODEL_EVERY_X_EPOCH, we make a checkpoint of our model
             print(f"model saved to {str(checkpoints_dir)}")
     save_model(
         model=model,

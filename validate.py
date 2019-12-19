@@ -20,6 +20,21 @@ from models.unet import UNet
 
 
 def validate(model, dataloader, criterion, model_weights=None):
+    """Calculate validation loss for a given model and a given dataset
+
+        Args:
+            model (nn.Module) : Model to be validated
+            
+            dataloader : The dataloader of the validation set
+            
+            criterion : Loss function used for validation
+            
+            checkpoints_dir : path for where to save the checkpoints
+            
+            model_weights : a dict containing the state of the weights with which to initialize our model
+
+        """
+    
 
     if model_weights is not None:
         model.load_state_dict(torch.load(model_weights))
